@@ -263,19 +263,35 @@ func (s *submitResult) GetAppStatus() *libkb.AppStatus {
 	return &s.Status
 }
 
-func SubmitTransaction(ctx context.Context, g *libkb.GlobalContext, payload libkb.JSONPayload) (stellar1.PaymentResult, error) {
+func SubmitPayment(ctx context.Context, g *libkb.GlobalContext, post stellar1.PaymentDirectPost) (stellar1.PaymentResult, error) {
+	payload := make(libkb.JSONPayload)
+	payload["payment"] = post
 	apiArg := libkb.APIArg{
 		Endpoint:    "stellar/submitpayment",
 		SessionType: libkb.APISessionTypeREQUIRED,
 		JSONPayload: payload,
 		NetContext:  ctx,
 	}
-
 	var res submitResult
 	if err := g.API.PostDecode(apiArg, &res); err != nil {
 		return stellar1.PaymentResult{}, err
 	}
+	return res.PaymentResult, nil
+}
 
+func SubmitRelayPayment(ctx context.Context, g *libkb.GlobalContext, post stellar1.PaymentRelayPost) (stellar1.PaymentResult, error) {
+	payload := make(libkb.JSONPayload)
+	payload["payment"] = post
+	apiArg := libkb.APIArg{
+		Endpoint:    "stellar/submitpayment",
+		SessionType: libkb.APISessionTypeREQUIRED,
+		JSONPayload: payload,
+		NetContext:  ctx,
+	}
+	var res submitResult
+	if err := g.API.PostDecode(apiArg, &res); err != nil {
+		return stellar1.PaymentResult{}, err
+	}
 	return res.PaymentResult, nil
 }
 
